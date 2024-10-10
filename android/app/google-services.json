@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "143962450086",
+    "project_id": "campus-comerce",
+    "storage_bucket": "campus-comerce.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:143962450086:android:6d99e58d6bb9a99e3d6c67",
+        "android_client_info": {
+          "package_name": "campu.comerce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtbAWTAl30hY4ktvoSWTVNCaW457jNxYE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
