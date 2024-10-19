@@ -8,7 +8,8 @@ import 'package:myapp/core/entity/product.dart';
 import 'package:myapp/core/usecase/Cart_Product_Firebase.dart';
 import 'package:myapp/core/repository/cart_repository.dart';
 import 'package:myapp/core/usecase/Cart_Product_Sqflite.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Importar Firebase Auth para obtener el userId
+import 'package:firebase_auth/firebase_auth.dart'; 
+import 'category_pages.dart';// Importar Firebase Auth para obtener el userId
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -22,6 +23,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   late final CartRepository _cartRepository;
+  int _currentPageIndex = 0;
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
+      _currentPageIndex = index;
     });
   }
 
@@ -54,15 +57,16 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
       MarketPage(addToCart: _addToCart),
-      CartPages(cartRepository: _cartRepository), // Pasamos el repositorio
+      const CategoryPages(),
       const ProfilePages(),
+      CartPages(cartRepository: _cartRepository), // pasamos el repositorio
     ];
 
     return Scaffold(
       body: Column(
         children: [
           const BuildSearch(),
-          Expanded(child: _pages[_currentIndex]),
+          Expanded(child: _pages[_currentPageIndex]),
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
@@ -80,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
             return FloatingActionButton(
               onPressed: () {
                 setState(() {
-                  _currentIndex = 1; // Cambia a la pestaña del carrito
+                  _currentPageIndex = 3; // Cambia a la pestaña del carrito
                 });
               },
               backgroundColor: Colors.greenAccent,

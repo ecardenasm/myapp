@@ -12,10 +12,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
+    
+    return BottomNavigationBar(    
+      
+      items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Carrito'),
+        BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Categorías'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
       ],
       currentIndex: currentIndex,
