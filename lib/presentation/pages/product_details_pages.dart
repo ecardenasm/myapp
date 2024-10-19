@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/core/entity/product.dart';
 import 'package:myapp/core/repository/cart_repository.dart';
+import 'package:myapp/core/usecase/Cart_Product_Firebase.dart';
 import 'cart_pages.dart';
 import '../widgets/market_grid.dart';
 
@@ -20,7 +21,7 @@ class _ProductDetailsPagesState extends State<ProductDetailsPages> {
   void initState() {
     super.initState();
     String userId = "userId1"; // Reemplaza esto con el ID del usuario actual
-    _cartRepository = CartRepository(userId);
+    _cartRepository = CartProductFirebase(userId);
   }
 
   @override

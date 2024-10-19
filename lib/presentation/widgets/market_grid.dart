@@ -52,7 +52,7 @@ class _MarketGridState extends State<MarketGrid> {
 
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 2,
         crossAxisSpacing: 8.0,
         mainAxisSpacing: 8.0,
         childAspectRatio: 0.75,

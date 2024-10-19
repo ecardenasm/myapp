@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/presentation/pages/login_pages.dart';
+import 'package:myapp/presentation/pages/home_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         useMaterial3: true,
       ),
-      home: LoginPage(),
+      home: MyHomePage(title: 'CAMPUS COMERCE'),
     );
   }
 }

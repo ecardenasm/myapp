@@ -5,7 +5,9 @@ import 'profile_pages.dart';
 import '../widgets/build_search.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 import 'package:myapp/core/entity/product.dart';
+import 'package:myapp/core/usecase/Cart_Product_Firebase.dart';
 import 'package:myapp/core/repository/cart_repository.dart';
+import 'package:myapp/core/usecase/Cart_Product_Sqflite.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importar Firebase Auth para obtener el userId
 
 class MyHomePage extends StatefulWidget {
@@ -26,9 +28,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     User? user = FirebaseAuth.instance.currentUser; // Obtener el usuario autenticado
     if (user != null) {
-      _cartRepository = CartRepository(user.uid); // Inicializa CartRepository con el userId del usuario autenticado
+      _cartRepository = CartProductFirebase(user.uid); // Inicializa CartRepository con el userId del usuario autenticado
     } else {
-      // Manejar el caso en que no haya usuario autenticado
+      _cartRepository = CartProductSqflite(); // Inicializa CartRepository con Sqflite si no hay usuario autenticado
     }
   }
 
