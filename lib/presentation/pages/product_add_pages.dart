@@ -14,6 +14,9 @@ class _AddProductPageState extends State<AddProductPage> {
   final _nameController = TextEditingController();
   final _imageUrlController = TextEditingController();
   final _priceController = TextEditingController();
+  final _categoryController = TextEditingController();
+
+  final List<String> _categories = ['Comida', 'Bebida', 'Papelería', 'Otros'];
 
   final ProductRepository _productRepository = ProductRepository();
 
@@ -21,6 +24,7 @@ class _AddProductPageState extends State<AddProductPage> {
     String name = _nameController.text.trim();
     String imageUrl = _imageUrlController.text.trim();
     double price = double.tryParse(_priceController.text.trim()) ?? 0.0;
+    String category = _categoryController.text.trim();
 
     User? user = FirebaseAuth.instance.currentUser;
 
@@ -41,6 +45,7 @@ class _AddProductPageState extends State<AddProductPage> {
       imageUrl: imageUrl,
       price: price,
       brand: brand,  // El brand es el nombre del usuario
+      category: category,
     );
 
     try {
@@ -54,6 +59,7 @@ class _AddProductPageState extends State<AddProductPage> {
         imageUrl: imageUrl,
         price: price,
         brand: brand,
+        category: category,
       );
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -68,6 +74,8 @@ class _AddProductPageState extends State<AddProductPage> {
       ));
     }
   }
+
+  String? _selectedCategory; // Nueva variable para la categoría seleccionada
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +99,21 @@ class _AddProductPageState extends State<AddProductPage> {
               controller: _priceController,
               decoration: const InputDecoration(labelText: 'Precio'),
               keyboardType: TextInputType.number,
+            ),
+            DropdownButton<String>(
+              hint: const Text('Selecciona una categoría'),
+              value: _selectedCategory,
+              items: _categories.map((category) {
+                return DropdownMenuItem(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedCategory = value; // Actualiza la categoría seleccionada
+                });
+              },
             ),
             const SizedBox(height: 20),
             ElevatedButton(

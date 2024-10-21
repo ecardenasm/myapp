@@ -13,6 +13,8 @@ class Product {
   final String brand;
   @HiveField(5)
   final int quantity; // Agregamos un campo para la cantidad
+  @HiveField(6)
+  final String category;
 
   Product({
     required this.id,
@@ -20,6 +22,7 @@ class Product {
     required this.imageUrl,
     required this.price,
     required this.brand,
+    this.category = "",
     this.quantity = 1, // Valor predeterminado de cantidad
   });
 
@@ -31,6 +34,7 @@ class Product {
       'price': price,
       'brand': brand,
       'quantity': quantity, // Agregamos la cantidad al Map
+      'category': category,
     };
   }
 
@@ -44,6 +48,7 @@ class Product {
       brand: map['brand'] ?? '',
       quantity:
           map['quantity'] ?? 1, // Aseguramos que la cantidad sea leída del Map
+      category: map['category'] ?? '',
     );
   }
 
@@ -56,7 +61,7 @@ class Product {
       price: price,
       brand: brand,
       quantity: quantity ?? this.quantity,
+      category: category,
     );
   }
 }
-

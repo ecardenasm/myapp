@@ -4,6 +4,8 @@ import 'package:myapp/core/repository/cart_repository.dart';
 import 'package:myapp/core/usecase/Cart_Product_Firebase.dart';
 import 'cart_pages.dart';
 import '../widgets/market_grid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/core/usecase/Cart_Product_Hive.dart';
 
 class ProductDetailsPages extends StatefulWidget {
   const ProductDetailsPages({super.key, required this.product});
@@ -20,8 +22,12 @@ class _ProductDetailsPagesState extends State<ProductDetailsPages> {
   @override
   void initState() {
     super.initState();
-    String userId = "userId1"; // Reemplaza esto con el ID del usuario actual
-    _cartRepository = CartProductFirebase(userId);
+    User? user = FirebaseAuth.instance.currentUser; // Obtener el usuario autenticado
+    if (user != null) {
+      _cartRepository = CartProductFirebase(user.uid); // Inicializa CartRepository con el userId del usuario autenticado
+    } else {
+      _cartRepository = CartProductHive(); // Inicializa CartRepository con Hive si no hay usuario autenticado
+    }
   }
 
   @override
@@ -36,7 +42,7 @@ class _ProductDetailsPagesState extends State<ProductDetailsPages> {
           icon: const Icon(Icons.arrow_back),
         ),
       ),
-      body: Column(
+      body: ListView(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -104,7 +110,8 @@ class _ProductDetailsPagesState extends State<ProductDetailsPages> {
                   duration: Duration(seconds: 2),
                 ),
               );
-            }),
+              setState(() {}); // Forzar la actualización de la interfaz
+            }, selectedCategory: 'Todos',),
           ),
         ],
       ),

@@ -11,7 +11,10 @@ class MarketPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16.0),
-      child: MarketGrid(addToCart: addToCart), // Pasamos addToCart a MarketGrid
+      child: MarketGrid(
+        addToCart: addToCart,
+        selectedCategory: 'Todos',
+        ), // Pasamos addToCart a MarketGrid
     );
   }
 }

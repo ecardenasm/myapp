@@ -4,9 +4,10 @@ import 'package:myapp/core/repository/product_repository.dart';
 import 'product_card.dart';
 
 class MarketGrid extends StatefulWidget {
-  const MarketGrid({super.key, required this.addToCart}); // Acepta la función addToCart
+  const MarketGrid({super.key, required this.addToCart, required this.selectedCategory});
 
-  final Function(Product) addToCart; // Definimos el tipo de la función
+  final Function(Product) addToCart;
+  final String selectedCategory;
 
   @override
   _MarketGridState createState() => _MarketGridState();
@@ -14,6 +15,7 @@ class MarketGrid extends StatefulWidget {
 
 class _MarketGridState extends State<MarketGrid> {
   List<Product> products = [];
+  List<Product> filteredProducts = [];
   final ProductRepository _productRepository = ProductRepository();
   bool _isLoading = true;
 
@@ -28,6 +30,7 @@ class _MarketGridState extends State<MarketGrid> {
       List<Product> fetchedProducts = await _productRepository.getAllProducts();
       setState(() {
         products = fetchedProducts;
+        _filterProducts(); // Filtra los productos de acuerdo a la categoría seleccionada
         _isLoading = false;
       });
     } catch (e) {
@@ -40,14 +43,30 @@ class _MarketGridState extends State<MarketGrid> {
     }
   }
 
+  void _filterProducts() {
+    if (widget.selectedCategory == 'Todos') {
+      filteredProducts = products;
+    } else {
+      filteredProducts = products.where((product) => product.category == widget.selectedCategory).toList();
+    }
+  }
+
+  @override
+  void didUpdateWidget(MarketGrid oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedCategory != widget.selectedCategory) {
+      _filterProducts(); // Actualiza los productos filtrados si cambia la categoría
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (products.isEmpty) {
-      return const Center(child: Text('No hay productos disponibles.'));
+    if (filteredProducts.isEmpty) {
+      return const Center(child: Text('No hay productos disponibles para esta categoría.'));
     }
 
     return GridView.builder(
@@ -57,15 +76,13 @@ class _MarketGridState extends State<MarketGrid> {
         mainAxisSpacing: 8.0,
         childAspectRatio: 0.75,
       ),
-      itemCount: products.length,
+      itemCount: filteredProducts.length,
       itemBuilder: (context, index) {
-        // Aquí pasamos la función addToCart a ProductCard
         return ProductCard(
-          product: products[index],
-          addToCart: widget.addToCart, // Pasamos addToCart a ProductCard
+          product: filteredProducts[index],
+          addToCart: widget.addToCart,
         );
       },
     );
   }
 }
-

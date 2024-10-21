@@ -9,8 +9,6 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(ProductAdapter());
 
-  
-
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: "AIzaSyCZ0pMU7V0SuegamkHWoUjppb30bONcIIg",
@@ -40,5 +38,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
