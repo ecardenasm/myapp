@@ -1,9 +1,17 @@
+import 'package:hive/hive.dart';
+
 class Product {
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final String name;
+  @HiveField(2)
   final String imageUrl;
+  @HiveField(3)
   final double price;
+  @HiveField(4)
   final String brand;
+  @HiveField(5)
   final int quantity; // Agregamos un campo para la cantidad
 
   Product({
@@ -34,7 +42,8 @@ class Product {
       imageUrl: map['imageUrl'] ?? '',
       price: (map['price'] ?? 0.0).toDouble(),
       brand: map['brand'] ?? '',
-      quantity: map['quantity'] ?? 1, // Aseguramos que la cantidad sea leída del Map
+      quantity:
+          map['quantity'] ?? 1, // Aseguramos que la cantidad sea leída del Map
     );
   }
 
@@ -50,3 +59,4 @@ class Product {
     );
   }
 }
+

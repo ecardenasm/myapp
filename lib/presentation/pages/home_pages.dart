@@ -7,9 +7,9 @@ import '../widgets/custom_bottom_navigation_bar.dart';
 import 'package:myapp/core/entity/product.dart';
 import 'package:myapp/core/usecase/Cart_Product_Firebase.dart';
 import 'package:myapp/core/repository/cart_repository.dart';
-import 'package:myapp/core/usecase/Cart_Product_Sqflite.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'category_pages.dart';// Importar Firebase Auth para obtener el userId
+import 'package:myapp/core/usecase/Cart_Product_Hive.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -32,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (user != null) {
       _cartRepository = CartProductFirebase(user.uid); // Inicializa CartRepository con el userId del usuario autenticado
     } else {
-      _cartRepository = CartProductSqflite(); // Inicializa CartRepository con Sqflite si no hay usuario autenticado
+      _cartRepository = CartProductHive(); // Inicializa CartRepository con Hive si no hay usuario autenticado
     }
   }
 

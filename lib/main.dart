@@ -1,9 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:myapp/presentation/pages/home_pages.dart';
-
+import 'package:myapp/service/product_adapter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+  Hive.registerAdapter(ProductAdapter());
+
+  
+
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: "AIzaSyCZ0pMU7V0SuegamkHWoUjppb30bONcIIg",

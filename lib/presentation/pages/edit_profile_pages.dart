@@ -14,6 +14,7 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _nombreController;
   late TextEditingController _telefonoController;
+  late TextEditingController _imagenUrlController;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -21,6 +22,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.initState();
     _nombreController = TextEditingController(text: widget.userData['nombre']);
     _telefonoController = TextEditingController(text: widget.userData['telefono']);
+    _imagenUrlController = TextEditingController(text: widget.userData['photoUrl']);
   }
 
   Future<void> _actualizarPerfil() async {
@@ -29,6 +31,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await FirebaseFirestore.instance.collection('usuarios').doc(usuario.uid).update({
         'nombre': _nombreController.text,
         'telefono': _telefonoController.text,
+        'photoUrl': _imagenUrlController.text,
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Perfil actualizado exitosamente')),
@@ -53,6 +56,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
             TextField(
               controller: _telefonoController,
               decoration: const InputDecoration(labelText: 'Teléfono'),
+            ),
+            TextField(
+              controller: _imagenUrlController,
+              decoration: const InputDecoration(labelText: 'URL de la Imagen'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

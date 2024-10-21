@@ -1,8 +1,7 @@
-
-
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:myapp/core/entity/product.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:flutter/foundation.dart';
 
 class DatabaseCampus {
   // Crear la tabla cart
@@ -14,9 +13,19 @@ class DatabaseCampus {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('campus.db');
+
+    if (kIsWeb) {
+      // Si es web, usa inMemoryDatabasePath
+      _database = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath); 
+    } else {
+      // Si es móvil (Android o iOS), usa _initDB
+      _database = await _initDB('campus.db'); 
+    }
+
+    _createDB(_database!, 1); // Asegúrate de que las tablas se crean
     return _database!;
-  }
+   }
+
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
