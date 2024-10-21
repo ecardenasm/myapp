@@ -41,7 +41,7 @@ class ProductCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -53,24 +53,26 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '\$${product.price.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
+                  Center(
+                    child: Text(
+                      '\$${product.price}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.greenAccent,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Sold by: ${product.brand}',
+                    'Vendedor: ${product.brand}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 8), // Espacio para agregar el botón
-                  ElevatedButton(
+                  Center(child: ElevatedButton(
                     onPressed: () {
                       addToCart(product); // Llama a addToCart
                     },
@@ -79,7 +81,7 @@ class ProductCard extends StatelessWidget {
                       foregroundColor: Colors.white,
                     ),
                     child: const Text('Agregar al carrito'),
-                  ),
+                  ),)
                 ],
               ),
             ),
