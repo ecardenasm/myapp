@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/core/entity/product.dart';
 import 'package:myapp/core/repository/cart_repository.dart';
+import 'package:myapp/presentation/pages/whatsapp_page.dart';
 
 class CartPages extends StatefulWidget {
   final CartRepository cartRepository;
 
-  const CartPages({super.key, required this.cartRepository}); // Constructor que recibe el repositorio del carrito
+  const CartPages({super.key, required this.cartRepository});
 
   @override
   _CartPagesState createState() => _CartPagesState();
@@ -17,17 +18,33 @@ class _CartPagesState extends State<CartPages> {
   @override
   void initState() {
     super.initState();
-    _cartItemsFuture = widget.cartRepository.getCartItems(); // Inicializa la lista de productos del carrito
+    _cartItemsFuture = widget.cartRepository.getCartItems();
   }
 
   Future<void> _removeProduct(String productId) async {
     await widget.cartRepository.removeProductFromCart(productId);
     setState(() {
-      _cartItemsFuture = widget.cartRepository.getCartItems(); // Actualiza la lista de productos
+      _cartItemsFuture = widget.cartRepository.getCartItems();
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Producto eliminado del carrito')),
+      const SnackBar(content: Text('Producto eliminado del carrito')),
     );
+  }
+
+  Future<void> _checkout() async {
+    try {
+      await widget.cartRepository.checkout(); // Método del repositorio para procesar la compra
+      setState(() {
+        _cartItemsFuture = widget.cartRepository.getCartItems();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compra realizada con éxito')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al realizar la compra: $e')),
+      );
+    }
   }
 
   @override
@@ -37,20 +54,15 @@ class _CartPagesState extends State<CartPages> {
       body: FutureBuilder<List<Product>>(
         future: _cartItemsFuture,
         builder: (context, snapshot) {
-          // Estado de carga
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          }
-          // Manejo de errores
-          else if (snapshot.hasError) {
-            return Center(child: Text('Error al cargar el carrito: ${snapshot.error}'));
-          }
-          // Verificación de lista vacía
-          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error al cargar el carrito: ${snapshot.error}'),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('El carrito está vacío.'));
-          }
-          // Lista de productos en el carrito
-          else {
+          } else {
             final cartItems = snapshot.data!;
             return ListView.builder(
               itemCount: cartItems.length,
@@ -63,7 +75,6 @@ class _CartPagesState extends State<CartPages> {
                       Expanded(
                         child: Text(product.name),
                       ),
-                      // Burbuja verde que muestra la cantidad
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
@@ -71,7 +82,7 @@ class _CartPagesState extends State<CartPages> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '${product.quantity}', // Asegúrate de que `quantity` esté en tu clase Product
+                          '${product.quantity}',
                           style: const TextStyle(color: Colors.white),
                         ),
                       ),
@@ -81,8 +92,7 @@ class _CartPagesState extends State<CartPages> {
                   trailing: IconButton(
                     icon: const Icon(Icons.remove_shopping_cart),
                     onPressed: () {
-                      // Lógica para eliminar el producto del carrito
-                      _removeProduct(product.id); // Llama a la función para eliminar
+                      _removeProduct(product.id);
                     },
                   ),
                 );
@@ -90,6 +100,28 @@ class _CartPagesState extends State<CartPages> {
             );
           }
         },
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+              builder: (context) => WhatsAppContactPage(phoneNumber: '573128370891'),
+            ),
+          );
+
+            _checkout();
+          },
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+          ),
+          child: const Text(
+            'Realizar compra',
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
       ),
     );
   }

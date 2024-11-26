@@ -35,4 +35,8 @@ class CartProductHive implements CartRepository {
       await db.deleteProduct(item.id);
     }
   }
+  @override
+  Future<void> checkout() async {
+    await clearCart();
+  }
 }

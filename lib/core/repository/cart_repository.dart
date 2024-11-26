@@ -6,4 +6,5 @@ abstract class CartRepository {
   Future<bool> hasItems();
   Future<void> removeProductFromCart(String productId);
   Future<void> clearCart();
+  Future<void> checkout(); // Método agregado
 }

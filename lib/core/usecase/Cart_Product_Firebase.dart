@@ -1,8 +1,8 @@
-import 'package:myapp/core/repository/cart_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:myapp/core/entity/product.dart';
+import 'package:myapp/core/repository/cart_repository.dart';
 
-class CartProductFirebase implements CartRepository{
+class CartProductFirebase implements CartRepository {
   final String userId;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -11,20 +11,18 @@ class CartProductFirebase implements CartRepository{
   // Referencia a la subcolección del carrito dentro del documento del usuario
   CollectionReference get _cartRef =>
       _firestore.collection('usuario').doc(userId).collection('cart');
+
   @override
   Future<void> addProductToCart(Product product) async {
-    // Verificar si el producto ya está en el carrito
     DocumentSnapshot existingItem = await _cartRef.doc(product.id).get();
 
     if (existingItem.exists) {
-      // Si el producto ya existe, actualizar la cantidad
       int newQuantity = existingItem['quantity'] + 1;
       await _cartRef.doc(product.id).update({'quantity': newQuantity});
     } else {
-      // Si el producto no existe, agregarlo al carrito
       await _cartRef.doc(product.id).set({
         'productId': product.id,
-        'name': product.name, // Puedes agregar otros atributos si lo necesitas
+        'name': product.name,
         'brand': product.brand,
         'image': product.imageUrl,
         'price': product.price,
@@ -32,31 +30,20 @@ class CartProductFirebase implements CartRepository{
       });
     }
   }
+
   @override
   Future<List<Product>> getCartItems() async {
-    // Obtener los items del carrito
     QuerySnapshot snapshot = await _cartRef.get();
-    List<Product> cartItems = [];
-
-    for (var doc in snapshot.docs) {
-      String productId = doc['productId'];
-      String name = doc['name'];
-      double price = doc['price'];
-      String brand = doc['brand'];
-      String imageUrl = doc['image'];
-      int quantity = doc['quantity'];
-
-      Product product = Product(
-          id: productId,
-          name: name,
-          price: price,
-          brand: brand,
-          imageUrl: imageUrl,
-          quantity: quantity);
-      cartItems.add(product);
-    }
-
-    return cartItems;
+    return snapshot.docs.map((doc) {
+      return Product(
+        id: doc['productId'],
+        name: doc['name'],
+        price: doc['price'],
+        brand: doc['brand'],
+        imageUrl: doc['image'],
+        quantity: doc['quantity'],
+      );
+    }).toList();
   }
 
   @override
@@ -80,5 +67,32 @@ class CartProductFirebase implements CartRepository{
     }
 
     await batch.commit();
+  }
+
+  @override
+  Future<void> checkout() async {
+    QuerySnapshot snapshot = await _cartRef.get();
+    if (snapshot.docs.isEmpty) {
+      throw Exception('El carrito está vacío.');
+    }
+
+    // Procesar la compra
+    CollectionReference ordersRef =
+        _firestore.collection('usuario').doc(userId).collection('orders');
+
+    await ordersRef.add({
+      'timestamp': FieldValue.serverTimestamp(),
+      'items': snapshot.docs.map((doc) {
+        return {
+          'productId': doc['productId'],
+          'name': doc['name'],
+          'price': doc['price'],
+          'quantity': doc['quantity'],
+        };
+      }).toList(),
+    });
+
+    // Vaciar el carrito después de procesar la compra
+    await clearCart();
   }
 }
