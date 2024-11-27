@@ -6,6 +6,9 @@ class UserRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Getter para FirebaseFirestore
+  FirebaseFirestore get firestore => _firestore;
+
   Future<User?> registerUser({
     required String nombre,
     required String correo,
@@ -14,7 +17,8 @@ class UserRepository {
   }) async {
     try {
       // Crear usuario con Firebase Authentication
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: correo.trim(),
         password: password.trim(),
       );
@@ -32,12 +36,32 @@ class UserRepository {
       );
 
       // Guardar los datos del usuario en Firestore
-      await _firestore.collection('usuarios').doc(userCredential.user!.uid).set(nuevoUsuario.toMap());
+      await _firestore
+          .collection('usuarios')
+          .doc(userCredential.user!.uid)
+          .set(nuevoUsuario.toMap());
 
       return userCredential.user;
     } catch (e) {
       print('Error al registrar usuario: $e');
-      return null; // En caso de error, devuelve null
+      return null;
+    }
+  }
+
+  // Método adicional para obtener los datos del usuario desde Firestore
+  Future<Usuario?> getUserData(String userId) async {
+    try {
+      // Obtener los datos del usuario desde Firestore
+      DocumentSnapshot snapshot =
+          await _firestore.collection('usuarios').doc(userId).get();
+      if (snapshot.exists) {
+        // Convertir los datos a la instancia Usuario
+        return Usuario.fromMap(snapshot.data() as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      print('Error al obtener los datos del usuario: $e');
+      return null;
     }
   }
 }

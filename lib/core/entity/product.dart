@@ -1,20 +1,12 @@
-import 'package:hive/hive.dart';
-
 class Product {
-  @HiveField(0)
   final String id;
-  @HiveField(1)
   final String name;
-  @HiveField(2)
   final String imageUrl;
-  @HiveField(3)
   final double price;
-  @HiveField(4)
   final String brand;
-  @HiveField(5)
-  final int quantity; // Agregamos un campo para la cantidad
-  @HiveField(6)
   final String category;
+  final String supplierPhoneNumber;
+  final int quantity; // Nueva propiedad quantity
 
   Product({
     required this.id,
@@ -22,46 +14,58 @@ class Product {
     required this.imageUrl,
     required this.price,
     required this.brand,
-    this.category = "",
-    this.quantity = 1, // Valor predeterminado de cantidad
+    required this.category,
+    required this.supplierPhoneNumber,
+    required this.quantity, // Asegúrate de pasar este campo en el constructor
   });
 
-  // Convertir Product a Map para guardarlo en Firebase
+  Product copyWith({
+    String? id,
+    String? name,
+    String? imageUrl,
+    double? price,
+    String? brand,
+    String? category,
+    String? supplierPhoneNumber,
+    int?
+        quantity, // Asegúrate de incluir quantity en copyWith si quieres actualizarlo
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      price: price ?? this.price,
+      brand: brand ?? this.brand,
+      category: category ?? this.category,
+      supplierPhoneNumber: supplierPhoneNumber ?? this.supplierPhoneNumber,
+      quantity: quantity ??
+          this.quantity, // Default to current quantity if not provided
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'imageUrl': imageUrl,
       'price': price,
       'brand': brand,
-      'quantity': quantity, // Agregamos la cantidad al Map
       'category': category,
+      'supplierPhoneNumber': supplierPhoneNumber,
+      'quantity': quantity, // Agregar quantity al mapa
     };
   }
 
-  // Crear un Product desde un Map (es decir, desde Firebase)
   factory Product.fromMap(String id, Map<String, dynamic> map) {
     return Product(
       id: id,
-      name: map['name'] ?? '',
-      imageUrl: map['imageUrl'] ?? '',
-      price: (map['price'] ?? 0.0).toDouble(),
-      brand: map['brand'] ?? '',
-      quantity:
-          map['quantity'] ?? 1, // Aseguramos que la cantidad sea leída del Map
-      category: map['category'] ?? '',
-    );
-  }
-
-  // Método de copia para crear un nuevo Product con una cantidad diferente
-  Product copyWith({int? quantity}) {
-    return Product(
-      id: id,
-      name: name,
-      imageUrl: imageUrl,
-      price: price,
-      brand: brand,
-      quantity: quantity ?? this.quantity,
-      category: category,
+      name: map['name'],
+      imageUrl: map['imageUrl'],
+      price: map['price'],
+      brand: map['brand'],
+      category: map['category'],
+      supplierPhoneNumber: map['supplierPhoneNumber'],
+      quantity: map['quantity'] ?? 0, // Si quantity no está en el mapa, poner 0
     );
   }
 }

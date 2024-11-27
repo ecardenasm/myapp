@@ -1,5 +1,5 @@
 class Usuario {
-  final String id;       // Nuevo campo para el ID del usuario
+  final String id; // Nuevo campo para el ID del usuario
   final String nombre;
   final String correo;
   final String telefono;
@@ -20,6 +20,14 @@ class Usuario {
       'telefono': telefono,
     };
   }
+
+  // Método para crear una instancia de Usuario desde un mapa
+  factory Usuario.fromMap(Map<String, dynamic> map) {
+    return Usuario(
+      id: map['id'] ?? '', // Asignar un valor vacío si no existe
+      nombre: map['nombre'] ?? '',
+      correo: map['correo'] ?? '',
+      telefono: map['telefono'] ?? '',
+    );
+  }
 }
-
-

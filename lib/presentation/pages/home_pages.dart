@@ -7,8 +7,9 @@ import '../widgets/custom_bottom_navigation_bar.dart';
 import 'package:myapp/core/entity/product.dart';
 import 'package:myapp/core/usecase/Cart_Product_Firebase.dart';
 import 'package:myapp/core/repository/cart_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart'; 
-import 'category_pages.dart';// Importar Firebase Auth para obtener el userId
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/service/auth_service.dart';
+import 'category_pages.dart';
 import 'package:myapp/core/usecase/Cart_Product_Hive.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -23,25 +24,34 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   late final CartRepository _cartRepository;
+  late final AuthService _authService; // Nueva instancia de AuthService
   int _currentPageIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    User? user = FirebaseAuth.instance.currentUser; // Obtener el usuario autenticado
+    User? user = FirebaseAuth.instance.currentUser; // Usuario autenticado
+    _authService = AuthService(); // Inicializar AuthService
     if (user != null) {
-      _cartRepository = CartProductFirebase(user.uid); // Inicializa CartRepository con el userId del usuario autenticado
+      _cartRepository =
+          CartProductFirebase(user.uid); // Firebase si hay usuario autenticado
     } else {
-      _cartRepository = CartProductHive(); // Inicializa CartRepository con Hive si no hay usuario autenticado
+      _cartRepository = CartProductHive(); // Hive si no hay usuario autenticado
     }
   }
 
   // Método para agregar al carrito
   void _addToCart(Product product) async {
     await _cartRepository.addProductToCart(product);
+
+    // Mostrar mensaje con la interpolación de la variable supplierPhoneNumber
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Producto agregado al carrito')),
+      SnackBar(
+        content: Text(
+            'Producto agregado al carrito, Teléfono: ${product.supplierPhoneNumber}'),
+      ),
     );
+
     setState(() {}); // Opcional, para forzar la reconstrucción si es necesario
   }
 
@@ -59,7 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
       MarketPage(addToCart: _addToCart),
       CategoryPages(),
       const ProfilePages(),
-      CartPages(cartRepository: _cartRepository), // pasamos el repositorio
+      CartPages(
+        cartRepository: _cartRepository, // Pasar repositorio
+        authService: _authService, // Pasar AuthService
+      ),
     ];
 
     return Scaffold(
@@ -74,7 +87,8 @@ class _MyHomePageState extends State<MyHomePage> {
         onItemTapped: _onItemTapped,
       ),
       floatingActionButton: FutureBuilder<bool>(
-        future: _cartRepository.hasItems(), // Llamada para verificar si hay productos en el carrito
+        future: _cartRepository
+            .hasItems(), // Llamada para verificar si hay productos en el carrito
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator(); // Muestra un indicador de carga mientras se espera
@@ -98,4 +112,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
