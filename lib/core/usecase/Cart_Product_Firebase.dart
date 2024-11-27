@@ -105,6 +105,26 @@ class CartProductFirebase implements CartRepository {
   }
 
   @override
+  Future<void> removeProductsBySupplier(String supplierPhoneNumber) async {
+    try {
+      // Obtener todos los productos del carrito que corresponden a este proveedor
+      QuerySnapshot snapshot = await _cartRef
+          .where('telefono', isEqualTo: supplierPhoneNumber)
+          .get();
+
+      // Eliminar todos los productos del proveedor
+      WriteBatch batch = _firestore.batch();
+      for (var doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Error al eliminar productos del proveedor: $e');
+    }
+  }
+
+  @override
   Future<void> removeProductFromCart(String productId) async {
     try {
       await _cartRef.doc(productId).delete();

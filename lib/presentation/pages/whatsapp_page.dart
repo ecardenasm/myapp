@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:myapp/core/repository/cart_repository.dart'; // Asegúrate de importar el repositorio
 
 class WhatsAppContactPage extends StatefulWidget {
   final String phoneNumber;
   final String prefilledMessage;
+  final CartRepository cartRepository; // Añadir el repositorio aquí
 
   const WhatsAppContactPage({
     super.key,
     required this.phoneNumber,
     required this.prefilledMessage,
+    required this.cartRepository, // Pasar el repositorio como parámetro
   });
 
   @override
@@ -55,10 +58,21 @@ class _WhatsAppContactPageState extends State<WhatsAppContactPage> {
       final uri = Uri.parse(whatsappUrl);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+        // Llamar a la función para eliminar productos del carrito después de enviar el mensaje
+        _removeProductsFromCart();
       } else {
         throw Exception('No se pudo abrir WhatsApp');
       }
     }
+  }
+
+  void _removeProductsFromCart() async {
+    // Aquí llamamos al repositorio para eliminar los productos del carrito
+    await widget.cartRepository.removeProductsBySupplier(widget.phoneNumber);
+
+    // Regresar a la página anterior (Carrito)
+    Navigator.pop(context);
   }
 
   @override

@@ -98,10 +98,22 @@ class _CartPagesState extends State<CartPages> {
           builder: (context) => WhatsAppContactPage(
             phoneNumber: supplierPhoneNumber,
             prefilledMessage: message,
+            cartRepository: widget.cartRepository, // Pasa cartRepository aquí
           ),
         ),
       );
+
+      // Después de navegar a WhatsApp, elimina los productos del carrito
+      await widget.cartRepository.removeProductsBySupplier(supplierPhoneNumber);
     }
+  }
+
+  double _calculateTotal(List<Product> cartItems) {
+    double total = 0.0;
+    for (var product in cartItems) {
+      total += product.price * product.quantity;
+    }
+    return total;
   }
 
   @override
@@ -121,27 +133,63 @@ class _CartPagesState extends State<CartPages> {
             return const Center(child: Text('El carrito está vacío.'));
           } else {
             final cartItems = snapshot.data!;
-            return ListView.builder(
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                final product = cartItems[index];
-                return ListTile(
-                  title: Text(product.name),
-                  subtitle: Text(
-                      'Precio: ${_formatCurrency(product.price)}'), // Precio formateado
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_shopping_cart),
-                    onPressed: () async {
-                      await widget.cartRepository
-                          .removeProductFromCart(product.id);
-                      // Actualiza los productos en el carrito al eliminar uno
-                      setState(() {
-                        _loadCartItems(); // Cargar nuevamente el carrito
-                      });
+            double total = _calculateTotal(cartItems);
+
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final product = cartItems[index];
+                      return ListTile(
+                        leading: product.imageUrl != null
+                            ? Image.network(
+                                product.imageUrl!,
+                                width: 40, // Tamaño pequeño
+                                height: 40,
+                                fit: BoxFit.cover, // Ajuste de la imagen
+                              )
+                            : const Icon(Icons.image,
+                                size: 40), // Icono por defecto si no hay imagen
+                        title: Text(product.name),
+                        subtitle: Text(
+                          'Precio: ${_formatCurrency(product.price)} - Cantidad: ${product.quantity}', // Mostrar cantidad
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.remove_shopping_cart),
+                          onPressed: () async {
+                            await widget.cartRepository
+                                .removeProductFromCart(product.id);
+                            // Actualiza los productos en el carrito al eliminar uno
+                            setState(() {
+                              _loadCartItems(); // Cargar nuevamente el carrito
+                            });
+                          },
+                        ),
+                      );
                     },
                   ),
-                );
-              },
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        _formatCurrency(total),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             );
           }
         },

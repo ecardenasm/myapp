@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
       MarketPage(addToCart: _addToCart),
-      CategoryPages(),
+      CategoryPages(addToCart: _addToCart),
       const ProfilePages(),
       CartPages(
         cartRepository: _cartRepository, // Pasar repositorio

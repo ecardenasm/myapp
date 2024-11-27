@@ -111,9 +111,9 @@ class _ProductDetailsPagesState extends State<ProductDetailsPages> {
             thickness: 1,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'Productos relacionados',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -133,7 +133,8 @@ class _ProductDetailsPagesState extends State<ProductDetailsPages> {
                   ),
                 );
               },
-              selectedCategory: 'Todos',
+              selectedCategory:
+                  product.category, // Filtra por la categoría del producto
             ),
           ),
         ],
