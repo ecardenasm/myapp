@@ -4,7 +4,8 @@ import 'package:myapp/core/repository/product_repository.dart';
 import 'product_card.dart';
 
 class MarketGrid extends StatefulWidget {
-  const MarketGrid({super.key, required this.addToCart, required this.selectedCategory});
+  const MarketGrid(
+      {super.key, required this.addToCart, required this.selectedCategory});
 
   final Function(Product) addToCart;
   final String selectedCategory;
@@ -22,15 +23,16 @@ class _MarketGridState extends State<MarketGrid> {
   @override
   void initState() {
     super.initState();
-    _fetchProducts();
+    _fetchProducts(widget.selectedCategory); // Recibe la categoría al iniciar
   }
 
-  Future<void> _fetchProducts() async {
+  Future<void> _fetchProducts(String category) async {
     try {
       List<Product> fetchedProducts = await _productRepository.getAllProducts();
       setState(() {
         products = fetchedProducts;
-        _filterProducts(); // Filtra los productos de acuerdo a la categoría seleccionada
+        _filterProducts(
+            category); // Filtra los productos de acuerdo con la categoría seleccionada
         _isLoading = false;
       });
     } catch (e) {
@@ -43,11 +45,12 @@ class _MarketGridState extends State<MarketGrid> {
     }
   }
 
-  void _filterProducts() {
-    if (widget.selectedCategory == 'Todos') {
+  void _filterProducts(String category) {
+    if (category == 'Todos') {
       filteredProducts = products;
     } else {
-      filteredProducts = products.where((product) => product.category == widget.selectedCategory).toList();
+      filteredProducts =
+          products.where((product) => product.category == category).toList();
     }
   }
 
@@ -55,7 +58,8 @@ class _MarketGridState extends State<MarketGrid> {
   void didUpdateWidget(MarketGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.selectedCategory != widget.selectedCategory) {
-      _filterProducts(); // Actualiza los productos filtrados si cambia la categoría
+      _filterProducts(widget
+          .selectedCategory); // Actualiza los productos filtrados si cambia la categoría
     }
   }
 
@@ -66,7 +70,8 @@ class _MarketGridState extends State<MarketGrid> {
     }
 
     if (filteredProducts.isEmpty) {
-      return const Center(child: Text('No hay productos disponibles para esta categoría.'));
+      return const Center(
+          child: Text('No hay productos disponibles para esta categoría.'));
     }
 
     return GridView.builder(

@@ -35,8 +35,21 @@ class CartProductHive implements CartRepository {
       await db.deleteProduct(item.id);
     }
   }
+
   @override
   Future<void> checkout() async {
     await clearCart();
+  }
+
+  // Implementación del método para eliminar productos de un proveedor específico
+  @override
+  Future<void> removeProductsBySupplier(String supplierPhoneNumber) async {
+    final cartItems = await db.getAllProducts();
+    for (var item in cartItems) {
+      if (item.supplierPhoneNumber == supplierPhoneNumber) {
+        await db.deleteProduct(
+            item.id); // Elimina el producto si coincide con el proveedor
+      }
+    }
   }
 }

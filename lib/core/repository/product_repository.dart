@@ -6,7 +6,8 @@ class ProductRepository {
 
   // Método para agregar un producto y devolver el ID generado por Firebase
   Future<String> addProduct(Product product) async {
-    DocumentReference docRef = await _firestore.collection('productos').add(product.toMap());
+    DocumentReference docRef =
+        await _firestore.collection('productos').add(product.toMap());
 
     // Retorna el ID del documento recién creado
     return docRef.id;
@@ -15,7 +16,7 @@ class ProductRepository {
   // Método para obtener todos los productos
   Future<List<Product>> getAllProducts() async {
     QuerySnapshot snapshot = await _firestore.collection('productos').get();
-    
+
     return snapshot.docs.map((doc) {
       return Product.fromMap(doc.id, doc.data() as Map<String, dynamic>);
     }).toList();

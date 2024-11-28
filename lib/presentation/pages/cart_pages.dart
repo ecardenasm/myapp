@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/core/entity/product.dart';
+import 'package:myapp/core/entity/user.dart';
 import 'package:myapp/core/repository/cart_repository.dart';
 import 'package:myapp/presentation/pages/whatsapp_page.dart';
+import 'package:myapp/service/auth_service.dart';
+import 'package:intl/intl.dart'; // Importa intl para formatear la moneda
 
 class CartPages extends StatefulWidget {
   final CartRepository cartRepository;
+  final AuthService authService;
 
-  const CartPages({super.key, required this.cartRepository});
+  const CartPages({
+    super.key,
+    required this.cartRepository,
+    required this.authService,
+  });
 
   @override
   _CartPagesState createState() => _CartPagesState();
@@ -18,33 +26,94 @@ class _CartPagesState extends State<CartPages> {
   @override
   void initState() {
     super.initState();
+    _loadCartItems();
+  }
+
+  void _loadCartItems() {
     _cartItemsFuture = widget.cartRepository.getCartItems();
   }
 
-  Future<void> _removeProduct(String productId) async {
-    await widget.cartRepository.removeProductFromCart(productId);
-    setState(() {
-      _cartItemsFuture = widget.cartRepository.getCartItems();
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Producto eliminado del carrito')),
-    );
+  Future<bool> isUserLoggedIn() async {
+    return await widget.authService.isUserLoggedIn();
   }
 
-  Future<void> _checkout() async {
-    try {
-      await widget.cartRepository.checkout(); // Método del repositorio para procesar la compra
-      setState(() {
-        _cartItemsFuture = widget.cartRepository.getCartItems();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compra realizada con éxito')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al realizar la compra: $e')),
-      );
+  Future<Usuario?> getUserDetails() async {
+    return await widget.authService.getCurrentUser();
+  }
+
+  Map<String, List<Product>> _groupProductsBySupplier(List<Product> products) {
+    final groupedProducts = <String, List<Product>>{};
+    for (var product in products) {
+      final supplierPhoneNumber = product.supplierPhoneNumber;
+      if (!groupedProducts.containsKey(supplierPhoneNumber)) {
+        groupedProducts[supplierPhoneNumber] = [];
+      }
+      groupedProducts[supplierPhoneNumber]!.add(product);
     }
+    return groupedProducts;
+  }
+
+  String _formatCurrency(double value) {
+    final format = NumberFormat.simpleCurrency(
+        locale: 'es_CO'); // Formatea a moneda colombiana
+    return format.format(value);
+  }
+
+  Future<void> _sendOrdersToWhatsApp(List<Product> products) async {
+    final groupedProducts = _groupProductsBySupplier(products);
+    final userLoggedIn = await isUserLoggedIn();
+    final userDetails = userLoggedIn ? await getUserDetails() : null;
+
+    for (var supplierPhoneNumber in groupedProducts.keys) {
+      if (supplierPhoneNumber.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Proveedor sin número de teléfono')),
+        );
+        continue;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Número de teléfono del proveedor: $supplierPhoneNumber'),
+        ),
+      );
+
+      final supplierProducts = groupedProducts[supplierPhoneNumber]!;
+      final total = supplierProducts.fold<double>(
+          0, (sum, product) => sum + (product.price * product.quantity));
+
+      final productDetails = supplierProducts
+          .map((p) =>
+              '- ${p.name} (x${p.quantity}): ${_formatCurrency(p.price * p.quantity)}') // Formateo de precio
+          .join('\n');
+
+      final message = userLoggedIn && userDetails != null
+          ? 'Pedido:\n\n$productDetails\n\nTotal: ${_formatCurrency(total)}\n\nUsuario: ${userDetails.nombre} Y telefono (${supplierPhoneNumber}), (${userDetails.correo})'
+          : 'Pedido:\n\n$productDetails\n\nTotal: ${_formatCurrency(total)}';
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WhatsAppContactPage(
+            phoneNumber: supplierPhoneNumber,
+            prefilledMessage: message,
+            cartRepository: widget.cartRepository, // Pasa cartRepository aquí
+          ),
+        ),
+      );
+
+      // Después de navegar a WhatsApp, elimina los productos del carrito
+      await widget.cartRepository.removeProductsBySupplier(supplierPhoneNumber);
+    }
+  }
+
+  double _calculateTotal(List<Product> cartItems) {
+    double total = 0.0;
+    for (var product in cartItems) {
+      total += product.price * product.quantity;
+    }
+    return total;
   }
 
   @override
@@ -64,39 +133,63 @@ class _CartPagesState extends State<CartPages> {
             return const Center(child: Text('El carrito está vacío.'));
           } else {
             final cartItems = snapshot.data!;
-            return ListView.builder(
-              itemCount: cartItems.length,
-              itemBuilder: (context, index) {
-                final product = cartItems[index];
-                return ListTile(
-                  title: Row(
+            double total = _calculateTotal(cartItems);
+
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: cartItems.length,
+                    itemBuilder: (context, index) {
+                      final product = cartItems[index];
+                      return ListTile(
+                        leading: product.imageUrl != null
+                            ? Image.network(
+                                product.imageUrl!,
+                                width: 40, // Tamaño pequeño
+                                height: 40,
+                                fit: BoxFit.cover, // Ajuste de la imagen
+                              )
+                            : const Icon(Icons.image,
+                                size: 40), // Icono por defecto si no hay imagen
+                        title: Text(product.name),
+                        subtitle: Text(
+                          'Precio: ${_formatCurrency(product.price)} - Cantidad: ${product.quantity}', // Mostrar cantidad
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.remove_shopping_cart),
+                          onPressed: () async {
+                            await widget.cartRepository
+                                .removeProductFromCart(product.id);
+                            // Actualiza los productos en el carrito al eliminar uno
+                            setState(() {
+                              _loadCartItems(); // Cargar nuevamente el carrito
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: Text(product.name),
+                      const Text(
+                        'Total:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${product.quantity}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                      Text(
+                        _formatCurrency(total),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  subtitle: Text('Precio: \$${product.price.toStringAsFixed(2)}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_shopping_cart),
-                    onPressed: () {
-                      _removeProduct(product.id);
-                    },
-                  ),
-                );
-              },
+                ),
+              ],
             );
           }
         },
@@ -104,21 +197,17 @@ class _CartPagesState extends State<CartPages> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-              builder: (context) => WhatsAppContactPage(phoneNumber: '573128370891'),
-            ),
-          );
-
-            _checkout();
+          onPressed: () async {
+            final cartItems = await widget.cartRepository.getCartItems();
+            if (cartItems.isNotEmpty) {
+              await _sendOrdersToWhatsApp(cartItems);
+            }
           },
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
           ),
           child: const Text(
-            'Realizar compra',
+            'Enviar pedidos por WhatsApp',
             style: TextStyle(fontSize: 18),
           ),
         ),
