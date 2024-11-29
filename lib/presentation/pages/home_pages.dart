@@ -70,16 +70,25 @@ class _MyHomePageState extends State<MyHomePage> {
       CategoryPages(addToCart: _addToCart),
       const ProfilePages(),
       CartPages(
-        cartRepository: _cartRepository, // Pasar repositorio
-        authService: _authService, // Pasar AuthService
+        cartRepository: _cartRepository,
+        authService: _authService,
       ),
     ];
+
+    void _searchProducts(String query) {
+      // Lógica adicional si quieres manejar resultados directamente desde el Home
+    }
 
     return Scaffold(
       body: Column(
         children: [
-          const BuildSearch(),
-          Expanded(child: _pages[_currentPageIndex]),
+          BuildSearch(onSearch: _searchProducts),
+          Expanded(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _pages,
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
@@ -87,26 +96,22 @@ class _MyHomePageState extends State<MyHomePage> {
         onItemTapped: _onItemTapped,
       ),
       floatingActionButton: FutureBuilder<bool>(
-        future: _cartRepository
-            .hasItems(), // Llamada para verificar si hay productos en el carrito
+        future: _cartRepository.hasItems(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator(); // Muestra un indicador de carga mientras se espera
-          } else if (snapshot.hasError) {
-            return Container(); // Maneja el error, en este caso no mostramos el botón
-          } else if (snapshot.hasData && snapshot.data == true) {
-            return FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  _currentPageIndex = 3; // Cambia a la pestaña del carrito
-                });
-              },
-              backgroundColor: Colors.greenAccent,
-              child: const Icon(Icons.shopping_cart),
-            );
-          } else {
-            return Container(); // Si no hay productos, no muestra el botón
+            return const SizedBox.shrink();
+          } else if (snapshot.hasError || !(snapshot.data ?? false)) {
+            return const SizedBox.shrink();
           }
+          return FloatingActionButton(
+            onPressed: () {
+              setState(() {
+                _currentIndex = 3;
+              });
+            },
+            backgroundColor: Colors.greenAccent,
+            child: const Icon(Icons.shopping_cart),
+          );
         },
       ),
     );
