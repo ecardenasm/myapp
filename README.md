@@ -59,8 +59,8 @@ lib/
 ## 🛠️ Stack Tecnológico
 
 ### Framework y Lenguaje
-- **Flutter** 3.4.3+
-- **Dart** 3.4.3+
+- **Flutter** SDK 3.4.3 o superior
+- **Dart** SDK >= 3.4.3 < 4.0.0
 
 ### Backend y Base de Datos
 - **Firebase Core** (^3.6.0) - Plataforma de desarrollo
@@ -71,7 +71,7 @@ lib/
 ### Almacenamiento Local
 - **Hive** (^2.2.3) - Base de datos NoSQL local
 - **Hive Flutter** (^1.1.0) - Integración de Hive con Flutter
-- **SQLite** (^2.0.0) - Base de datos SQL local
+- **SQFlite** (^2.0.0) - Base de datos SQL local para Flutter
 
 ### Utilidades
 - **url_launcher** (^6.3.1) - Apertura de URLs (WhatsApp)
@@ -105,7 +105,7 @@ lib/
 
 1. **Clonar el repositorio**
    ```bash
-   git clone https://github.com/ecardenasm/myapp.git
+   git clone <repository-url>
    cd myapp
    ```
 
